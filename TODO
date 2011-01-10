@@ -1,0 +1,4 @@
+Fix pid management
+save messages to user error.log
+add timeout control/handler
+add signal management (SIGTERM,SIGHUP)
