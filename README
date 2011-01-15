@@ -68,5 +68,34 @@ make ac - compile the city autocompile programm
 
 City Autocomplete programm (as example)
 
-The good example is city autocomplete. See the autocomplete.cpp.
-The autocomplete program read the city file.
+The good example is city autocomplete. See source of the autocomplete.cpp.
+The autocomplete program read the city names file. The format is csv: city lowcase name or shortname, city official name, range, id. The example:
+
+"new york","New York",25,1267
+"newyork","New York",25,1267
+"washington",""Washington",10,1121
+etc...
+
+The range is sort order variable. For example:
+Moscow - is Russian capital
+Malinovka - is small city but if show by abc, the name "Malinovka" will showed before Moscow. Using range variable  show the name "Malinovka" after name "Moscow".
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
