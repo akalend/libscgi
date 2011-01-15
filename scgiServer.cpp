@@ -55,6 +55,8 @@ void on_connect(int fd, short event, void *arg)
 		*handler_data = '\0';
 		int contentLenght = 0;
 		
+		char headersOutBuff[1024];
+		headersOutBuff[0] = '\0';
 		if (it == pHandlers->end()) {
 			statusCode = 404;
 			strcpy(statusMsg,"Not Found");
@@ -63,9 +65,10 @@ void on_connect(int fd, short event, void *arg)
 			IScgiHandler * handler = (*it).second;
 			handler->run(&parms, handler_data);	
 			contentLenght = strlen(handler_data);
+			handler->getHeaders(headersOutBuff);	
 		}
 		
-		sprintf(out_data,"Status: %d %s\r\nContent-lenght: %d\r\n\r\n%s", statusCode, statusMsg, contentLenght, handler_data);
+		sprintf(out_data,"Status: %d %s\r\nContent-lenght: %d\r\nPowered: libscgi\r\n%s\r\n%s", statusCode, statusMsg, contentLenght, headersOutBuff,handler_data);
 
 		write(sock, out_data, strlen((char*)out_data) );	
 
@@ -223,4 +226,34 @@ int scgiServer::savePid( pid_t pid )
 	write(fd, (void *)pid, sizeof(pid));
 	close(fd);
 	return 0;
-}
+};
+
+string IScgiHandler::getParam(string paramName, map< string,string > * parms) {
+	map< string,string >::iterator it = parms->find(paramName); 
+	
+	if ( it != parms->end()) 
+		return (*it).second;
+				
+	return "";	
+};
+
+void IScgiHandler::getHeaders(char * headersOutBuff) {
+		char * p = headersOutBuff;
+		if (headers.size()) {
+			list<string>::iterator it;
+			for (it=headers.begin();it!=headers.end();it++) {
+				strcpy(p,(*it).c_str());
+				int size = (*it).size();
+				p = p + size;
+				*(p++) = '\r';
+				*(p++) = '\n';				
+			}
+		}
+		*p='\0';
+
+};
+
+void  IScgiHandler::addHeader(string header) {
+	headers.push_back(header);
+};
+

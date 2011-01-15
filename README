@@ -1,11 +1,33 @@
-The libscgi is lightweight framework realise the scgi prootocol http://en.wikipedia.org/wiki/SCGI
+The libscgi is lightweight framework realise the scgi prootocol http://en.wikipedia.org/wiki/SCGI It is simple scgi server based on libevent. You can use as backend to Apache/lighttpd/nginix ( http://nginx.org )
+
+The field of use is lightweight scripts as quickly find, script of autocomplete, online dictionary.
+
+Configure nginx scgi_module: 
+
+	location /dictionary {
+		scgi_pass localhost:8080;
+		include scgi_params;
+	 }
+You can to change host/port.
+
 The example of  code:
 
-
-class Handler2: IScgiHandler {
+/**
+* the cackback handler
+* example Users logic
+*/
+class Handler: IScgiHandler {
 
 	void run(map< string,string > * parms, char * buffUot) {
-		strcpy(buffUot,"54321");
+		string parm = getParam("REQUEST_METHOD",parms);
+		// if method is POST 
+		if ( parm == "POST" ) {
+			// return to WEB-client the POST data
+			strcpy(buffUot, getParam("POST_DATA",parms).c_str());
+			return;	
+		}
+		// or return to WEB-client the QUERY_STRING parameter
+		strcpy(buffUot, getParam("QUERY_STRING",parms).c_str());		  
 	}
 };
 
@@ -27,18 +49,24 @@ int main(int argc, char **argv)
 		}	
 		return 0;
 	}
-
-	if (scgi.savePid(pid) == -1) {
-		cerr << "server stopped\n";
-		return 1;	
-	}
 	
 	if (scgi.init("127.0.0.1", 8080) ) {
 		cerr << "server stopped\n";
 		return 1;
 	}
 	
-	scgi.addHandler("/xxx",  reinterpret_cast<IScgiHandler *>(new Handler2()));
+	scgi.addHandler("/dictionary",  reinterpret_cast<IScgiHandler *>(new Handler()));
 	scgi.run();
 }
 
+INSTALL
+
+make liby - compile the scgi-library
+make  - compile the scgi-bin example
+make ac - compile the city autocompile programm
+
+
+City Autocomplete programm (as example)
+
+The good example is city autocomplete. See the autocomplete.cpp.
+The autocomplete program read the city file.

@@ -14,6 +14,7 @@
 #include <memory>
 #include <map>
 #include <string>
+#include <list>
 
 #ifndef __SCGILIB__
 #define __SCGILIB__
@@ -22,10 +23,23 @@
 using namespace std;
 
 class IScgiHandler {
+	protected:
+		void * userData;
+		list <string> headers;
+
+	 void addHeader(string header);
+
 	public:
 		IScgiHandler(){};
+	
+	 void setUserData(void * userData_) {
+		userData = userData_;
+	 };	
+
+	 string getParam(string paramName, map< string,string > * parms);
 	 virtual ~IScgiHandler(){};
 	 virtual void run(map< string,string > * parms, char * buffUot) {};
+	 void getHeaders(char * outBuffer);	
 };
 
 class scgiServer
@@ -47,6 +61,6 @@ class scgiServer
 		};
 		void closeSock() {
 			close(server_sock);
-		}
+		}		
 };
 #endif
