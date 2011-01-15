@@ -68,17 +68,41 @@ make ac - compile the city autocompile programm
 
 City Autocomplete programm (as example)
 
-The good example is city autocomplete. See source of the autocomplete.cpp.
+The practical example is city autocomplete. See source of the autocomplete.cpp.
 The autocomplete program read the city names file. The format is csv: city lowcase name or shortname, city official name, range, id. The example:
 
-"new york","New York",25,1267
+"new-york","New York",25,1267
 "newyork","New York",25,1267
 "washington",""Washington",10,1121
 etc...
 
 The range is sort order variable. For example:
-Moscow - is Russian capital
-Malinovka - is small city but if show by abc, the name "Malinovka" will showed before Moscow. Using range variable  show the name "Malinovka" after name "Moscow".
+Moscow - is Russian capital, must be first in the padding list, beginning with letter "m".
+Mogilev - is region center city.
+Malinovka - is country, but if show by abc, the name "Malinovka" will showed before Moscow. Using range variable , we creale ordered list: Moscow,Mogilev,Malinovka.
+
+The run script: ./server /path/to/cityNameFile.csv
+
+Input data: send post data (one-two-three symbols from word) to url http://hostname/cityes
+The output is in json format: {"cityes" : [ { "name": "New York", "id":90},{ "name": "New Vasyki", "id":808},{ "name": "Nazareth", "id":1505},{ "name": "Neaple", "id":1965}],"time":304}
+
+The limitation of the output is ten items. This limitation can change by definition constant MAXITEMS in source before compilation. The "time" parametr is processing time for search an range in microseconds.
+
+
+LICENSE
+ 
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+
+
 
 
 
