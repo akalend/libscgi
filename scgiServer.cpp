@@ -63,7 +63,7 @@ void on_connect(int fd, short event, void *arg)
 		map<string,IScgiHandler *> * pHandlers = reinterpret_cast< map<string,IScgiHandler *> * >(arg);
 						 		 
 		it = pHandlers->find( parms["DOCUMENT_URI"] );
-		
+
 		int statusCode = 200; 
 		char statusMsg[10];
 		bzero(statusMsg,10);
@@ -83,7 +83,7 @@ void on_connect(int fd, short event, void *arg)
 			handler->getHeaders(headersOutBuff);	
 		}
 		
-		sprintf(out_data,"Status: %d %s\r\nContent-lenght: %d\r\nPowered: libscgi\r\n%s\r\n%s", statusCode, statusMsg, contentLenght, headersOutBuff,handler_data);
+		sprintf(out_data,"Status: %d %s\r\nContent-lenght: %d\r\nX-Powered-By: libscgi\r\n%s\r\n%s", statusCode, statusMsg, contentLenght, headersOutBuff,handler_data);
 
 		write(sock, out_data, strlen((char*)out_data) );	
 

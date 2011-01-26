@@ -17,7 +17,12 @@
 #include "scgi.hpp"
 #include <memory>
 #include <iostream>
+#include <algorithm>
+#include <string>
 #include <fstream>
+#include <sys/types.h>
+//   #include <cctype>
+
 
 #define MAXITEMS 10
 
@@ -34,6 +39,7 @@ long long now_microseconds(void) {
   gettimeofday(&tv, NULL);
   return (long long) tv.tv_sec * 1000000 + (long long) tv.tv_usec;
 }
+
 
 /**
 * the autocomplete callback handler
@@ -52,16 +58,43 @@ class Handler1: public IScgiHandler {
 			map<string,item> * cityes = reinterpret_cast<map<string,item> * >(userData);
 			map<string,item>::iterator it, it_low, it_up;
 			
-			const char * fword = getParam("POST_DATA",parms).c_str();
+			FILE * fd = fopen("autocomplete.log", "a");
+			
+			u_char * postData = (u_char*)getParam("POST_DATA",parms).c_str();
+			int len =  strlen( reinterpret_cast<char*>(postData));
+			
+			for(int i=0; i < len;i++) {				
+
+				u_char c = *(postData +i);
+				
+				/* fix  tolower Russian (cyrilic)  UTF-8 */
+				if ( c >= 0x90 && c<= 0x9F) { // А-П
+					*(postData +i) = c+32;
+				}
+
+				if ( c >= 0xA0 && c<= 0xAF) {  // Р-Я
+					*(postData +i) = c+224;
+				}
+			}
+						
+			const char * fword = const_cast<char*>(reinterpret_cast<char *>(postData));			
+
+			fprintf(fd, "\n%s\n", fword);
+			fclose(fd);
+
 			
 			it_low=cityes->lower_bound (fword);  // itlow points to b
 			
-			if (it_low==cityes->end()) 
+			if (it_low==cityes->end()) {
+				sprintf(buffOut, "{\"cityes\" : []}");			
+				addHeader("Content-type: text/json");			
 				return;
-
+			}	
+			fclose(fd);			
+			
 			map <int,item> result;		
 			for (it = it_low; it != cityes->end(); it++) {
-				if ( (*it).first.substr(0,strlen(fword)) != fword) break;
+				if ( (*it).first.substr(0,len) != fword) break;
 				result.insert(pair<int,item>((*it).second.order,(*it).second));
 			}						
 
@@ -154,7 +187,7 @@ int main(int argc, char **argv)
 
 	//If You started server as daemon You must to use demonize() method 
 	pid_t pid;
-	if ((pid = scgi.demonize()) < 1) {
+	if ( false && (pid = scgi.demonize()) < 1) {
 		if (pid == -1) {
 			cerr << "demonize error\n";
 			return 1;
