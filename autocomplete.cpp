@@ -52,75 +52,69 @@ class Handler1: public IScgiHandler {
 		// if method is POST 
 		if ( getParam("REQUEST_METHOD",parms) != "POST" ) 
 			return;
-			// return to WEB-client the POST data
-			long long start_time = now_microseconds();
+		
+		// return to WEB-client the POST data
+		long long start_time = now_microseconds();
 
-			map<string,item> * cityes = reinterpret_cast<map<string,item> * >(userData);
-			map<string,item>::iterator it, it_low, it_up;
-			
-			FILE * fd = fopen("autocomplete.log", "a");
-			
-			u_char * postData = (u_char*)getParam("POST_DATA",parms).c_str();
-			int len =  strlen( reinterpret_cast<char*>(postData));
-			
-			for(int i=0; i < len;i++) {				
+		map<string,item> * cityes = reinterpret_cast<map<string,item> * >(userData);
+		map<string,item>::iterator it, it_low, it_up;
 
-				u_char c = *(postData +i);
-				
-				/* fix  tolower Russian (cyrilic)  UTF-8 */
-				if ( c >= 0x90 && c<= 0x9F) { // А-П
-					*(postData +i) = c+32;
-				}
+		u_char * postData = (u_char*)getParam("POST_DATA",parms).c_str();
+		int len =  strlen( reinterpret_cast<char*>(postData));
+		
+		for(int i=0; i < len;i++) {				
 
-				if ( c >= 0xA0 && c<= 0xAF) {  // Р-Я
-					*(postData +i) = c+224;
-				}
+			u_char c = *(postData +i);
+			
+			/* fix  tolower Russian (cyrilic)  UTF-8 */
+			if ( c >= 0x90 && c<= 0x9F) { // А-П
+				*(postData +i) = c+32;
 			}
-						
-			const char * fword = const_cast<char*>(reinterpret_cast<char *>(postData));			
 
-			fprintf(fd, "\n%s\n", fword);
-			fclose(fd);
-
-			
-			it_low=cityes->lower_bound (fword);  // itlow points to b
-			
-			if (it_low==cityes->end()) {
-				sprintf(buffOut, "{\"cityes\" : []}");			
-				addHeader("Content-type: text/json");			
-				return;
-			}	
-			fclose(fd);			
-			
-			map <int,item> result;		
-			for (it = it_low; it != cityes->end(); it++) {
-				if ( (*it).first.substr(0,len) != fword) break;
-				result.insert(pair<int,item>((*it).second.order,(*it).second));
-			}						
-
-			map <int,item>::iterator it_res;		
-			
-			string out;
-			int i = 0;
-			char data[256];
-			
-			for(it_res = result.begin(); it_res != result.end(); it_res++ ) {
-				char zpt =',';
-				if (!i++) 
-					zpt = ' ';
-				if (i > MAXITEMS)
-						break;
-				sprintf(data ,"%c{ \"name\": \"%s\", \"id\":%d}", zpt,(*it_res).second.name.c_str(),(*it_res).second.id);	
-				out = out + data ;
+			if ( c >= 0xA0 && c<= 0xAF) {  // Р-Я
+				*(postData +i) = c+224;
 			}
+		}
+					
+		const char * fword = const_cast<char*>(reinterpret_cast<char *>(postData));			
+
+		it_low=cityes->lower_bound (fword);  // itlow points to b
+
+		if (it_low==cityes->end()) {
+			sprintf(buffOut, "{\"cityes\" : []}");			
+			addHeader("Content-type: text/json");			
+			return;
+		}	
+		
+		map <int,item> result;		
+		for (it = it_low; it != cityes->end(); it++) {
+			if ( (*it).first.substr(0,len) != fword) break;
+			result.insert(pair<int,item>((*it).second.order,(*it).second));
+		}						
+
+		map <int,item>::iterator it_res;		
+		
+		string out;
+		int i = 0;
+		char data[256];
+		
+		for(it_res = result.begin(); it_res != result.end(); it_res++ ) {
+			char zpt =',';
+			if (!i++) 
+				zpt = ' ';
+			if (i > MAXITEMS)
+					break;
+			sprintf(data ,"%c{ \"name\": \"%s\", \"id\":%d}", zpt,(*it_res).second.name.c_str(),(*it_res).second.id);	
+			out = out + data ;
+		}
 
 //			cout << out << endl << "len=" << out.size() << endl;
-			int all_time = now_microseconds()-start_time;		
-			sprintf(buffOut, "{\"cityes\" : [%s],\"time\":%d}" , out.c_str(),all_time);
-			
-			addHeader("Content-type: text/json");
+		int all_time = now_microseconds()-start_time;		
+		sprintf(buffOut, "{\"cityes\" : [%s],\"time\":%d}" , out.c_str(),all_time);
+		
+		addHeader("Content-type: text/json");
 
-			return;	
+		return;	
 		
 	}
 };

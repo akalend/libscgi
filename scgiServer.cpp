@@ -265,7 +265,7 @@ void IScgiHandler::getHeaders(char * headersOutBuff) {
 			}
 		}
 		*p='\0';
-
+		headers.clear();
 };
 
 void  IScgiHandler::addHeader(string header) {
